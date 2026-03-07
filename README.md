@@ -8,7 +8,7 @@ https://ai-intelligence-app-9bsspaatmxqrky5z3j45xt.streamlit.app
 
 ## Screenshot
 
-![AI Intelligence Hub](屏幕截图 2026-03-08 062055.png)
+![AI Intelligence Hub](screenshoot.png)
 
 ## Features
 
