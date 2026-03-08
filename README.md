@@ -6,10 +6,6 @@ An AI-powered news intelligence dashboard that aggregates multi-industry news an
 
 https://ai-intelligence-app-9bsspaatmxqrky5z3j45xt.streamlit.app
 
-## Screenshot
-
-![AI Intelligence Hub](https://raw.githubusercontent.com/JingzhouHong/ai-intelligence-hub/main/screenshot.png)
-
 ## Features
 
 - Multi-industry news aggregation
