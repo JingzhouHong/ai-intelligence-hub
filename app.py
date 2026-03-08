@@ -21,6 +21,37 @@ feeds = {
 
 st.set_page_config(page_title="AI Intelligence Hub", layout="wide")
 
+st.markdown("""
+<style>
+.typing-title {
+    display: inline-block;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    border-right: 3px solid #111827;
+    width: 0;
+    animation:
+        typing-cycle 8.5s steps(30, end) infinite,
+        blink-caret 0.8s step-end infinite;
+    margin-bottom: 0.25rem;
+}
+
+@keyframes typing-cycle {
+    0%   { width: 0; }
+    18%  { width: 29ch; }
+    62%  { width: 29ch; }
+    82%  { width: 0; }
+    100% { width: 0; }
+}
+
+@keyframes blink-caret {
+    50% { border-color: transparent; }
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 @st.cache_data(show_spinner=False)
 def summarize_cached(title: str) -> str:
@@ -85,7 +116,7 @@ def answer_question(question: str, context: str) -> str:
 if "last_refresh" not in st.session_state:
     st.session_state.last_refresh = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-st.title("AI Intelligence Hub")
+st.markdown('<div class="typing-title">Welcome to AI Intelligence Hub</div>', unsafe_allow_html=True)
 st.caption("A multi-industry AI-powered news briefing dashboard")
 
 with st.sidebar:
