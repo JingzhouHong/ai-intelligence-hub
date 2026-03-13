@@ -17,9 +17,9 @@ client = OpenAI(api_key=api_key)
 
 feeds = {
     "Tech": "https://techcrunch.com/feed/",
-    "AI": "https://venturebeat.com/category/ai/feed/",
     "Business": "https://www.cnbc.com/id/100003114/device/rss/rss.html",
-    "Healthcare": "https://www.statnews.com/feed/"
+    "Healthcare": "https://www.statnews.com/feed/",
+    "World": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml"
 }
 
 st.set_page_config(page_title="AI Intelligence Hub", layout="wide")
@@ -204,7 +204,6 @@ def fetch_og_image(article_url: str) -> str | None:
 
 
 def extract_image(entry) -> str | None:
-    # 1) RSS 里优先取更可能是大图的字段
     if hasattr(entry, "media_content") and entry.media_content:
         for media in entry.media_content:
             url = media.get("url")
@@ -223,13 +222,11 @@ def extract_image(entry) -> str | None:
     if image_from_summary:
         return image_from_summary
 
-    # 2) 原文页兜底抓 og:image
     entry_link = getattr(entry, "link", "")
     og_image = fetch_og_image(entry_link)
     if og_image:
         return og_image
 
-    # 3) 最后才用缩略图
     if hasattr(entry, "media_thumbnail") and entry.media_thumbnail:
         for media in entry.media_thumbnail:
             url = media.get("url")
@@ -237,6 +234,25 @@ def extract_image(entry) -> str | None:
                 return url
 
     return None
+
+
+def format_published(entry) -> str:
+    published = getattr(entry, "published", "")
+    if published:
+        return published
+
+    published_parsed = getattr(entry, "published_parsed", None)
+    if published_parsed:
+        try:
+            return datetime(*published_parsed[:6]).strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            return "Latest update"
+
+    updated = getattr(entry, "updated", "")
+    if updated:
+        return updated
+
+    return "Latest update"
 
 
 @st.cache_data(show_spinner=False, ttl=1800)
@@ -249,7 +265,7 @@ def fetch_news():
         for entry in feed.entries[:5]:
             title = getattr(entry, "title", "No title")
             link = getattr(entry, "link", "#")
-            published = getattr(entry, "published", "")
+            published = format_published(entry)
             image = extract_image(entry)
 
             all_news.append({
@@ -278,7 +294,7 @@ def answer_question(question: str, context: str) -> str:
             },
             {
                 "role": "user",
-                "content": f"News context:\\n{context}\\n\\nQuestion:\\n{question}"
+                "content": f"News context:\n{context}\n\nQuestion:\n{question}"
             }
         ]
     )
@@ -308,9 +324,8 @@ def render_featured_card(item: dict, idx: int):
         if item["image"]:
             st.image(item["image"], use_container_width=True)
 
-        published_text = item["published"] if item["published"] else "Latest update"
         st.markdown(
-            f"<div class='news-meta'>{item['category']} · {published_text}</div>",
+            f"<div class='news-meta'>{item['category']} · {item['published']}</div>",
             unsafe_allow_html=True
         )
 
@@ -332,9 +347,8 @@ def render_small_card(item: dict, idx: int):
         if item["image"]:
             st.image(item["image"], use_container_width=True)
 
-        published_text = item["published"] if item["published"] else "Latest update"
         st.markdown(
-            f"<div class='news-meta'>{item['category']} · {published_text}</div>",
+            f"<div class='news-meta'>{item['category']} · {item['published']}</div>",
             unsafe_allow_html=True
         )
 
@@ -372,9 +386,9 @@ with st.sidebar:
     st.write("Categories included:")
     st.markdown("""
     - Tech
-    - AI
     - Business
     - Healthcare
+    - World
     """)
 
     if st.button("Refresh News"):
@@ -389,7 +403,7 @@ with st.spinner("Loading latest news..."):
 
 selected_category = st.selectbox(
     "Choose a category",
-    ["All", "Tech", "AI", "Business", "Healthcare"]
+    ["All", "Tech", "Business", "Healthcare", "World"]
 )
 
 search_keyword = st.text_input("Search by keyword")
@@ -422,7 +436,7 @@ if user_question:
     st.markdown("### AI Answer")
     st.write(answer)
 
-categories_to_show = ["Tech", "AI", "Business", "Healthcare"]
+categories_to_show = ["Tech", "Business", "Healthcare", "World"]
 
 for category in categories_to_show:
     if selected_category != "All" and selected_category != category:
